@@ -3,7 +3,7 @@
 Summary: Statistics collection daemon for filling RRD files
 Name: collectd
 Version: 5.5.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: System Environment/Daemons
 URL: http://collectd.org/
@@ -508,6 +508,7 @@ touch src/riemann.proto src/pinba.proto
 %configure \
     --disable-dependency-tracking \
     --disable-silent-rules \
+    --disable-werror \
     --without-included-ltdl \
     --enable-all-plugins \
     --disable-static \
@@ -978,6 +979,10 @@ make check
 
 
 %changelog
+* Fri Feb 26 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-3
+- Disable -Werror
+  Fixes build failures due to deprecation warnings turned into errors.
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 5.5.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
