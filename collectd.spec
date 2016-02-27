@@ -3,7 +3,7 @@
 Summary: Statistics collection daemon for filling RRD files
 Name: collectd
 Version: 5.5.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2
 Group: System Environment/Daemons
 URL: http://collectd.org/
@@ -21,6 +21,7 @@ Source97: rrdtool.conf
 Source98: onewire.conf
 
 Patch0: %{name}-include-collectd.d.patch
+Patch1: vserver-ignore-deprecation-warnings.patch
 
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(ExtUtils::Embed)
@@ -508,7 +509,6 @@ touch src/riemann.proto src/pinba.proto
 %configure \
     --disable-dependency-tracking \
     --disable-silent-rules \
-    --disable-werror \
     --without-included-ltdl \
     --enable-all-plugins \
     --disable-static \
@@ -541,7 +541,7 @@ touch src/riemann.proto src/pinba.proto
     --with-java=%{java_home}/ \
     --with-python \
     --with-perl-bindings=INSTALLDIRS=vendor \
-    AR_FLAGS="-cr"
+    AR_FLAGS="-cr" \
 
 make %{?_smp_mflags}
 
@@ -979,6 +979,11 @@ make check
 
 
 %changelog
+* Sat Feb 27 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-4
+- Disable deprecation warnings in vserver plugin for now.
+  The upcoming glibc 2.24 deprecates readdir_r.
+  Reported upstream in #1566
+
 * Fri Feb 26 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-3
 - Disable -Werror
   Fixes build failures due to deprecation warnings turned into errors.
