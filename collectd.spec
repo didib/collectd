@@ -3,7 +3,7 @@
 Summary: Statistics collection daemon for filling RRD files
 Name: collectd
 Version: 5.5.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2
 Group: System Environment/Daemons
 URL: http://collectd.org/
@@ -22,6 +22,7 @@ Source98: onewire.conf
 
 Patch0: %{name}-include-collectd.d.patch
 Patch1: vserver-ignore-deprecation-warnings.patch
+Patch2: modbus-avoid-enabling-libmodbus-s-debug-flag-by-defa.patch
 
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(ExtUtils::Embed)
@@ -84,7 +85,16 @@ Group:         System Environment/Daemons
 Requires:      %{name}%{?_isa} = %{version}-%{release}
 BuildRequires: yajl-devel
 %description ceph
-This plugin collectd data from Ceph
+This plugin collects data from Ceph.
+
+
+%package -n collectd-utils
+Summary:       Collectd utilities
+Group:         System Environment/Daemons
+#Requires:      libcollectdclient%{?_isa} = %{version}-%{release}
+#Requires:      %{name}%{?_isa} = %{version}-%{release}
+%description -n collectd-utils
+Collectd utilities
 
 
 %package curl
@@ -124,6 +134,15 @@ BuildRequires: libdbi-devel
 %description dbi
 This plugin uses the dbi library to connect to various databases,
 execute SQL statements and read back the results.
+
+
+%package disk
+Summary:       Disk plugin for collectd
+Group:         System Environment/Daemons
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+BuildRequires: systemd-devel
+%description disk
+This plugin collects statistics of harddisk and, where supported, partitions.
 
 
 %package dns
@@ -194,6 +213,30 @@ BuildRequires: java-devel
 BuildRequires: jpackage-utils
 %description java
 These are the Java bindings for collectd.
+
+
+%package -n libcollectdclient
+Summary:       Collectd client library
+Group:         System Environment/Daemons
+%description -n libcollectdclient
+Collectd client library.
+
+
+%package -n libcollectdclient-devel
+Summary:       Development files for libcollectdclient
+Group:         System Environment/Daemons
+Requires:      libcollectdclient%{?_isa} = %{version}-%{release}
+%description -n libcollectdclient-devel
+Development files for libcollectdclient.
+
+
+%package log_logstash
+Summary:       Logstash plugin for collectd
+Group:         System Environment/Daemons
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+BuildRequires: yajl-devel
+%description log_logstash
+This plugin formats messages as JSON events for Logstash
 
 
 %package lvm
@@ -445,6 +488,15 @@ This package will allow for a simple web interface to view rrd files created by
 collectd.
 
 
+%package write_http
+Summary:       HTTP output plugin for collectd
+Group:         System Environment/Daemons
+Requires:      %{name}%{?_isa} = %{version}-%{release}
+BuildRequires: curl-devel
+%description write_http
+This plugin can send data to Redis.
+
+
 %package write_redis
 Summary:       Redis output plugin for collectd
 Group:         System Environment/Daemons
@@ -536,7 +588,6 @@ touch src/riemann.proto src/pinba.proto
 %endif
     --disable-write_kafka \
     --disable-write_mongodb \
-    --disable-zfs_arc \
     --with-libiptc \
     --with-java=%{java_home}/ \
     --with-python \
@@ -606,7 +657,6 @@ make check
 
 
 %post
-/sbin/ldconfig
 %systemd_post collectd.service
 
 
@@ -615,9 +665,13 @@ make check
 
 
 %postun
-/sbin/ldconfig
 %systemd_postun_with_restart collectd.service
 
+
+%post -n libcollectdclient -p /sbin/ldconfig
+
+
+%postun -n libcollectdclient -p /sbin/ldconfig
 
 %files
 %{!?_licensedir:%global license %%doc}
@@ -645,9 +699,6 @@ make check
 %exclude %{_sysconfdir}/collectd.d/snmp.conf
 
 %{_unitdir}/collectd.service
-%{_bindir}/collectd-nagios
-%{_bindir}/collectdctl
-%{_bindir}/collectd-tg
 %{_sbindir}/collectd
 %{_sbindir}/collectdmon
 %dir %{_localstatedir}/lib/collectd/
@@ -664,7 +715,6 @@ make check
 %{_libdir}/collectd/cpufreq.so
 %{_libdir}/collectd/csv.so
 %{_libdir}/collectd/df.so
-%{_libdir}/collectd/disk.so
 %{_libdir}/collectd/entropy.so
 %{_libdir}/collectd/ethstat.so
 %{_libdir}/collectd/exec.so
@@ -676,7 +726,6 @@ make check
 %{_libdir}/collectd/ipc.so
 %{_libdir}/collectd/irq.so
 %{_libdir}/collectd/load.so
-%{_libdir}/collectd/log_logstash.so
 %{_libdir}/collectd/logfile.so
 %{_libdir}/collectd/madwifi.so
 %{_libdir}/collectd/match_empty_counter.so
@@ -724,25 +773,12 @@ make check
 %{_libdir}/collectd/vserver.so
 %{_libdir}/collectd/wireless.so
 %{_libdir}/collectd/write_graphite.so
-%{_libdir}/collectd/write_http.so
 %{_libdir}/collectd/write_log.so
+%{_libdir}/collectd/zfs_arc.so
 
 %{_datadir}/collectd/types.db
 
-# collectdclient - TBD reintroduce -devel subpackage?
-%{_libdir}/libcollectdclient.so
-%{_libdir}/libcollectdclient.so.1
-%{_libdir}/libcollectdclient.so.1.0.0
-%{_libdir}/pkgconfig/libcollectdclient.pc
-%{_includedir}/collectd/client.h
-%{_includedir}/collectd/lcc_features.h
-%{_includedir}/collectd/network.h
-%{_includedir}/collectd/network_buffer.h
-
 %doc %{_mandir}/man1/collectd.1*
-%doc %{_mandir}/man1/collectdctl.1*
-%doc %{_mandir}/man1/collectd-nagios.1*
-%doc %{_mandir}/man1/collectd-tg.1*
 %doc %{_mandir}/man1/collectdmon.1*
 %doc %{_mandir}/man5/collectd.conf.5*
 %doc %{_mandir}/man5/collectd-exec.5*
@@ -750,6 +786,29 @@ make check
 %doc %{_mandir}/man5/collectd-threshold.5*
 %doc %{_mandir}/man5/collectd-unixsock.5*
 %doc %{_mandir}/man5/types.db.5*
+
+
+%files -n libcollectdclient-devel
+%{_includedir}/collectd/client.h
+%{_includedir}/collectd/network.h
+%{_includedir}/collectd/network_buffer.h
+%{_includedir}/collectd/lcc_features.h
+%{_libdir}/pkgconfig/libcollectdclient.pc
+%{_libdir}/libcollectdclient.so
+
+
+%files -n libcollectdclient
+%{_libdir}/libcollectdclient.so.1
+%{_libdir}/libcollectdclient.so.1.0.0
+
+
+%files -n collectd-utils
+%{_bindir}/collectd-nagios
+%{_bindir}/collectd-tg
+%{_bindir}/collectdctl
+%{_mandir}/man1/collectdctl.1*
+%{_mandir}/man1/collectd-nagios.1*
+%{_mandir}/man1/collectd-tg.1*
 
 %files amqp
 %{_libdir}/collectd/amqp.so
@@ -782,6 +841,10 @@ make check
 
 %files curl_xml
 %{_libdir}/collectd/curl_xml.so
+
+
+%files disk
+%{_libdir}/collectd/disk.so
 
 
 %files dbi
@@ -825,6 +888,10 @@ make check
 %dir %{_datadir}/collectd/java/
 %{_datadir}/collectd/java/collectd-api.jar
 %doc %{_mandir}/man5/collectd-java.5*
+
+%files log_logstash
+%{_libdir}/collectd/log_logstash.so
+
 
 %files lvm
 %{_libdir}/collectd/lvm.so
@@ -954,6 +1021,10 @@ make check
 %config(noreplace) %{_sysconfdir}/collection.conf
 
 
+%files write_http
+%{_libdir}/collectd/write_http.so
+
+
 %files write_redis
 %{_libdir}/collectd/write_redis.so
 
@@ -979,6 +1050,15 @@ make check
 
 
 %changelog
+* Sat Feb 27 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-5
+- Enable zfs_arc plugin now that it supports ZoL.
+- Move disk plugin to subpackage.
+- Move log_logstash plugin to subpackage.
+- Move write_http plugin to subpackage.
+- Move utils to subpackage.
+- Finally create subpackage for libcollectdclient.
+- Modbus: avoid enabling libmodbus's debug flag by default
+
 * Sat Feb 27 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-4
 - Disable deprecation warnings in vserver plugin for now.
   The upcoming glibc 2.24 deprecates readdir_r.
