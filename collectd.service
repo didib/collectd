@@ -5,8 +5,9 @@ After=local-fs.target network-online.target
 Requires=local-fs.target network-online.target
 
 [Service]
-ExecStart=/usr/sbin/collectd -C /etc/collectd.conf -f
+ExecStart=/usr/sbin/collectd
 Restart=on-failure
+Type=notify
 
 [Install]
 WantedBy=multi-user.target

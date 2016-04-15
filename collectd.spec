@@ -3,7 +3,7 @@
 Summary: Statistics collection daemon for filling RRD files
 Name: collectd
 Version: 5.5.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2
 Group: System Environment/Daemons
 URL: http://collectd.org/
@@ -91,8 +91,8 @@ This plugin collects data from Ceph.
 %package -n collectd-utils
 Summary:       Collectd utilities
 Group:         System Environment/Daemons
-#Requires:      libcollectdclient%{?_isa} = %{version}-%{release}
-#Requires:      %{name}%{?_isa} = %{version}-%{release}
+Requires:      libcollectdclient%{?_isa} = %{version}-%{release}
+Requires:      %{name}%{?_isa} = %{version}-%{release}
 %description -n collectd-utils
 Collectd utilities
 
@@ -1049,7 +1049,12 @@ make check
 %{_libdir}/collectd/zookeeper.so
 
 
+
 %changelog
+* Fri Apr 15 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-6
+- Use Type=notify in systemd unit now that collectd support it.
+- Uncomment accidentally commented Requires for collectd-utils
+
 * Sat Feb 27 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-5
 - Enable zfs_arc plugin now that it supports ZoL.
 - Move disk plugin to subpackage.
