@@ -1,8 +1,7 @@
-From c6ec7654302659415defe4f497384ea0edc15e98 Mon Sep 17 00:00:00 2001
+From 41579f76f82137f39de38a160abad18579cbb9c4 Mon Sep 17 00:00:00 2001
 From: Marc Fournier <marc.fournier@camptocamp.com>
 Date: Thu, 25 Feb 2016 11:22:18 +0100
-Subject: [PATCH 802/804] modbus: avoid enabling libmodbus's debug flag by
- default
+Subject: [PATCH] modbus: avoid enabling libmodbus's debug flag by default
 
 Having this enabled makes collectd's stdout and stderr very noisy. From
 now on, only activate this flag when collectd is built with
@@ -14,10 +13,10 @@ Thanks to Eric Sandeen for mentioning this problem on IRC.
  1 file changed, 4 insertions(+)
 
 diff --git a/src/modbus.c b/src/modbus.c
-index b5d1e2519605..7349dc564976 100644
+index 97b98b7..c04b308 100644
 --- a/src/modbus.c
 +++ b/src/modbus.c
-@@ -288,7 +288,9 @@ static int mb_init_connection (mb_host_t *host) /* {{{ */
+@@ -310,7 +310,9 @@ static int mb_init_connection (mb_host_t *host) /* {{{ */
    if (host == NULL)
      return (EINVAL);
  
@@ -27,8 +26,8 @@ index b5d1e2519605..7349dc564976 100644
  
    /* We'll do the error handling ourselves. */
    modbus_set_error_handling (&host->connection, NOP_ON_ERROR);
-@@ -341,7 +343,9 @@ static int mb_init_connection (mb_host_t *host) /* {{{ */
-     return (-1);
+@@ -390,7 +392,9 @@ static int mb_init_connection (mb_host_t *host) /* {{{ */
+     }
    }
  
 +#if COLLECT_DEBUG
@@ -38,5 +37,5 @@ index b5d1e2519605..7349dc564976 100644
    /* We'll do the error handling ourselves. */
    modbus_set_error_recovery (host->connection, 0);
 -- 
-2.7.2
+2.5.5
 
