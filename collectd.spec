@@ -3,7 +3,7 @@
 Summary: Statistics collection daemon for filling RRD files
 Name: collectd
 Version: 5.5.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv2
 Group: System Environment/Daemons
 URL: http://collectd.org/
@@ -1051,6 +1051,9 @@ make check
 
 
 %changelog
+* Sat Apr 30 2016 Kevin Fenzi <kevin@scrye.com> - 5.5.1-8
+- Rebuild for librrd
+
 * Fri Apr 15 2016 Ruben Kerkhof <ruben@rubenkerkhof.com> - 5.5.1-7
 - Rebase modbus patch
 
